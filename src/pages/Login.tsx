@@ -37,12 +37,12 @@ const Login = () => {
       
       toast({
         title: "Login realizado",
-        description: "Você será redirecionado em breve.",
+        description: "Redirecionando para o dashboard...",
       });
       
-      // Simular login bem-sucedido
+      // Simular login bem-sucedido e redirecionar para dashboard
       setTimeout(() => {
-        navigate("/");
+        navigate("/dashboard");
       }, 1000);
     } catch (error) {
       toast({

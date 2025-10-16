@@ -62,12 +62,12 @@ const Signup = () => {
       
       toast({
         title: "Cadastro realizado com sucesso!",
-        description: "Você será redirecionado para o login.",
+        description: "Redirecionando para o dashboard...",
       });
       
-      // Redirecionar para login após cadastro
+      // Redirecionar para dashboard após cadastro
       setTimeout(() => {
-        navigate("/login");
+        navigate("/dashboard");
       }, 1500);
     } catch (error) {
       toast({
