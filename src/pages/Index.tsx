@@ -53,7 +53,7 @@ const Index = () => {
       }
       
       return false;
-    } catch (error: any) {
+    } catch (error) {
       console.error("Erro ao verificar blockchain:", error);
       throw error;
     }
@@ -116,7 +116,7 @@ const Index = () => {
           variant: "destructive",
         });
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error("Erro na verificação:", error);
       toast({
         title: "Erro na verificação",

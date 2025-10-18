@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ethers } from "ethers";
+import { Eip1193Provider, ethers } from "ethers";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -74,7 +74,7 @@ export default function Dashboard() {
           title: "MetaMask conectado",
           description: `Conta: ${accounts[0].substring(0, 6)}...${accounts[0].substring(38)}`,
         });
-      } catch (error: any) {
+      } catch (error) {
         toast({
           variant: "destructive",
           title: "Erro ao conectar MetaMask",
@@ -135,17 +135,14 @@ export default function Dashboard() {
     setIsUploading(true);
 
     try {
-      // Gerar hash do arquivo
       const fileHash = await generateHash(file);
       console.log("Hash do arquivo:", fileHash);
 
-      // Conectar ao provider MetaMask
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
 
-      // Criar transação para registrar o hash na blockchain
       const tx = await signer.sendTransaction({
-        to: account, // Enviando para a própria conta como exemplo
+        to: account, 
         value: 0,
         data: fileHash,
       });
@@ -155,7 +152,6 @@ export default function Dashboard() {
         description: "Aguardando confirmação na blockchain...",
       });
 
-      // Aguardar confirmação
       const receipt = await tx.wait();
 
       toast({
@@ -176,11 +172,10 @@ export default function Dashboard() {
       });
 
       setFile(null);
-      // Reset input
       const input = document.getElementById("file-upload") as HTMLInputElement;
       if (input) input.value = "";
 
-    } catch (error: any) {
+    } catch (error) {
       console.error("Erro no upload:", error);
       toast({
         variant: "destructive",
@@ -285,6 +280,6 @@ export default function Dashboard() {
 
 declare global {
   interface Window {
-    ethereum?: any;
+    ethereum?: Eip1193Provider;
   }
 }
