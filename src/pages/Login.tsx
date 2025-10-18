@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const loginSchema = z.object({
   email: z.string().trim().email({ message: "Email inválido" }).max(255, { message: "Email muito longo" }),
@@ -29,26 +30,44 @@ const Login = () => {
     },
   });
 
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate("/dashboard");
+      }
+    };
+    checkUser();
+  }, [navigate]);
+
   const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
     try {
-      // TODO: Integrar com backend quando disponível
-      console.log("Login data:", data);
-      
+      const { error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Erro ao fazer login",
+          description: error.message,
+        });
+        return;
+      }
+
       toast({
         title: "Login realizado",
         description: "Redirecionando para o dashboard...",
       });
       
-      // Simular login bem-sucedido e redirecionar para dashboard
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1000);
+      navigate("/dashboard");
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Erro ao fazer login",
-        description: "Verifique suas credenciais e tente novamente.",
+        description: "Ocorreu um erro inesperado. Tente novamente.",
       });
     } finally {
       setIsLoading(false);

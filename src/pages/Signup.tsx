@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const signupSchema = z.object({
   username: z.string()
@@ -53,27 +54,51 @@ const Signup = () => {
     },
   });
 
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        navigate("/dashboard");
+      }
+    };
+    checkUser();
+  }, [navigate]);
+
   const onSubmit = async (data: SignupFormValues) => {
     setIsLoading(true);
     try {
-      // TODO: Integrar com backend quando disponível
-      const { confirmPassword, ...signupData } = data;
-      console.log("Signup data:", signupData);
-      
+      const { error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/dashboard`,
+          data: {
+            username: data.username,
+            institution: data.institution,
+          }
+        }
+      });
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Erro ao cadastrar",
+          description: error.message,
+        });
+        return;
+      }
+
       toast({
         title: "Cadastro realizado com sucesso!",
         description: "Redirecionando para o dashboard...",
       });
       
-      // Redirecionar para dashboard após cadastro
-      setTimeout(() => {
-        navigate("/dashboard");
-      }, 1500);
+      navigate("/dashboard");
     } catch (error) {
       toast({
         variant: "destructive",
         title: "Erro ao cadastrar",
-        description: "Tente novamente mais tarde.",
+        description: "Ocorreu um erro inesperado. Tente novamente.",
       });
     } finally {
       setIsLoading(false);

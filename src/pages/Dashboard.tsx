@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Upload, CheckCircle2, AlertCircle } from "lucide-react";
+import { Upload, CheckCircle2, AlertCircle, LogOut } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -14,10 +15,30 @@ export default function Dashboard() {
   const [account, setAccount] = useState<string>("");
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>("");
 
   useEffect(() => {
+    checkAuth();
     checkMetaMask();
   }, []);
+
+  const checkAuth = async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      navigate("/login");
+      return;
+    }
+    setUserEmail(session.user.email || "");
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast({
+      title: "Logout realizado",
+      description: "Você foi desconectado com sucesso.",
+    });
+    navigate("/login");
+  };
 
   const checkMetaMask = async () => {
     if (typeof window.ethereum !== "undefined") {
@@ -183,16 +204,16 @@ export default function Dashboard() {
     }
   };
 
-  const handleLogout = () => {
-    navigate("/");
-  };
-
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <div>
+            <h1 className="text-3xl font-bold">Dashboard</h1>
+            {userEmail && <p className="text-sm text-muted-foreground">{userEmail}</p>}
+          </div>
           <Button onClick={handleLogout} variant="outline">
+            <LogOut className="mr-2 h-4 w-4" />
             Sair
           </Button>
         </div>
